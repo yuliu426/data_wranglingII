@@ -144,5 +144,54 @@ as.numeric(factor_vec )
 
     ## [1] 1 1 2 2
 
-NSDUH
------
+NSDUH--strings
+--------------
+
+``` r
+url = 'http://samhda.s3-us-gov-west-1.amazonaws.com/s3fs-public/field-uploads/2k15StateFiles/NSDUHsaeShortTermCHG2015.htm'
+drug_use_html = read_html(url)
+
+tab_mari = 
+  drug_use_html %>% 
+    html_nodes(css = 'table') %>% 
+    first() %>% 
+    html_table() %>% 
+    slice(-1) %>% 
+    as_tibble()
+```
+
+``` r
+data_mari =
+  tab_mari %>% 
+  select(-contains('P Value')) %>% 
+  pivot_longer(
+    -State,
+    names_to = 'age_year',
+    values_to = 'percent'
+  ) %>% 
+  separate(age_year, into = c('age', 'year'), sep = '\\(') %>% 
+  mutate(
+    year = str_replace(year, '\\)', ''),
+    percent = str_replace(percent, '[a-c]$', ''),
+    percent = as.numeric(percent)
+  ) %>% 
+  filter(!State %in% c('Total U.S.', 'Northeast', 'Midwest', 'South', 'West'))
+```
+
+NSDUH--factors
+--------------
+
+``` r
+data_mari %>% 
+  filter(age == '12-17') %>% 
+  #mutate(State = fct_relevel(State, 'Texas', 'Oklahoma')) %>% 
+  mutate(State = fct_reorder(State, percent)) %>% 
+  ggplot(aes(State, percent, color = year))+
+  geom_point()+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+
+<img src="string_and_factor_files/figure-markdown_github/unnamed-chunk-11-1.png" width="90%" />
+
+Weather data
+------------
