@@ -27,3 +27,38 @@ tab_mari =
     slice(-1) %>% 
     as_tibble()
 ```
+
+Star Wars Movie info
+--------------------
+
+``` r
+url = 'https://www.imdb.com/list/ls070150896/'
+
+swm_html = read_html(url)
+```
+
+Grab elements that I want:
+
+``` r
+titles_vec = 
+  swm_html %>% 
+  html_nodes(css = '.lister-item-header a') %>% 
+  html_text()
+
+gross_rev_vec = 
+  swm_html %>% 
+  html_nodes(css = '.text-muted .ghost~ .text-muted+ span') %>% 
+  html_text()
+
+runtime_vec = 
+  swm_html %>% 
+  html_nodes(css = '.runtime') %>% 
+  html_text()
+
+sum_df = 
+  tibble(
+    title = titles_vec, 
+    gross = gross_rev_vec,
+    runtime = runtime_vec
+  )
+```
